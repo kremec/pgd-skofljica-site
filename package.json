@@ -1,0 +1,33 @@
+{
+  "name": "pgd-skofljica-site",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "format:check": "prettier --check astro.config.mjs tailwind.config.mjs tsconfig.json package.json scripts \"src/**/*.{astro,ts,css}\"",
+    "audit": "bun audit",
+    "size": "node scripts/report-size.mjs",
+    "verify": "bun run format:check && bun run audit && bun run build && bun run size",
+    "prepare": "git config --local include.path ../.githooks/.gitconfig",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/vite": "^4.3.1",
+    "astro": "7.0.0-beta.3",
+    "lucide-astro": "^0.556.0",
+    "tailwindcss": "^4.3.1"
+  },
+  "devDependencies": {
+    "prettier": "3.8.1",
+    "prettier-plugin-astro": "0.14.1",
+    "prettier-plugin-tailwindcss": "0.7.2",
+    "vite": "^8.0.16"
+  }
+}

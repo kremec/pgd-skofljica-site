@@ -1,0 +1,41 @@
+---
+import LightboxImage from "@/components/LightboxImage.astro";
+
+import type { ImageMetadata } from "astro";
+
+interface Vehicle {
+  name: string;
+  image: ImageMetadata;
+  details: readonly string[];
+  description: string;
+  note?: string;
+}
+
+interface Props {
+  vehicle: Vehicle;
+}
+
+const { vehicle } = Astro.props;
+---
+
+<article
+  class="flex h-full min-w-0 flex-col overflow-hidden rounded-lg bg-white shadow-lg"
+>
+  <LightboxImage
+    src={vehicle.image}
+    alt={vehicle.name}
+    class="vehicle-image"
+    widths={[320, 480]}
+    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+  />
+  <div class="grid gap-3 p-4 text-zinc-600">
+    <h3 class="text-center text-xl leading-tight font-extrabold text-zinc-800">
+      {vehicle.name}
+    </h3>
+    <ul class="grid list-none gap-0.5 p-0">
+      {vehicle.details.map((detail) => <li class="min-w-0">{detail}</li>)}
+    </ul>
+    {vehicle.description && <p>{vehicle.description}</p>}
+    {vehicle.note && <p class="font-extrabold text-zinc-800">{vehicle.note}</p>}
+  </div>
+</article>

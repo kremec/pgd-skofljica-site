@@ -1,0 +1,204 @@
+<div class="mt-4 w-full" data-social-feed data-wall-id="155285">
+  <p class="my-4 text-center text-zinc-600" data-social-status>
+    Nalaganje objav...
+  </p>
+  <div class="text-center text-[0]" data-social-posts></div>
+  <div class="h-10" data-social-sentinel aria-hidden="true"></div>
+</div>
+
+<script is:inline>
+  (() => {
+    const API = "https://api.taggbox.com/api/v1/walls";
+    const FALLBACK_URL = "https://www.facebook.com/pgdskofljica";
+    const PAGE_SIZE = 12;
+    const escapeMap = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+
+    const headers = (extra = {}) => ({
+      authorization: "Bearer none",
+      productdomain: "taggbox.com",
+      requestDomain: location.href,
+      isLiteCode: "true",
+      ...extra,
+    });
+
+    const escapeHtml = (value = "") =>
+      String(value).replace(/[&<>"']/g, (char) => escapeMap[char]);
+
+    const postImage = (post) => {
+      const media = post.mediaList?.[0] ?? post.media;
+      const image = media?.image;
+
+      return (
+        image && {
+          src: image.large || image.original || image.small,
+          alt:
+            post.media?.title ||
+            post.content?.title ||
+            post.content?.text?.slice(0, 90) ||
+            "Objava PGD Škofljica",
+        }
+      );
+    };
+
+    const postKey = (post) => {
+      const text = post.content?.text?.replace(/\s+/g, " ").trim();
+      return (
+        post.link ||
+        (text &&
+          `${post.content?.feedName || ""}:${post.createdAt || ""}:${text}`) ||
+        post.postId ||
+        post.id
+      );
+    };
+
+    const mediaCount = (post) =>
+      Math.max(post.mediaList?.length ?? 0, post.media ? 1 : 0);
+
+    const groupPosts = (posts) => {
+      const groups = new Map();
+
+      posts.forEach((post) => {
+        const key = postKey(post);
+        const group = groups.get(key);
+
+        if (group) {
+          group.count += mediaCount(post) || 1;
+          return;
+        }
+
+        groups.set(key, {
+          key,
+          post,
+          count: mediaCount(post) || 1,
+        });
+      });
+
+      return [...groups.values()];
+    };
+
+    const fetchPosts = async (wallId, after = "") => {
+      const url = after
+        ? `${API}/load-more-posts/${wallId}/0/${PAGE_SIZE}/0/1/${encodeURIComponent(after)}`
+        : `${API}/${wallId}`;
+      const response = await fetch(url, {
+        headers: headers(after ? { action: "2" } : {}),
+      });
+
+      if (!response.ok)
+        throw new Error(`Taggbox request failed: ${response.status}`);
+
+      const data = await response.json();
+      const payload = after ? data : data.responseData;
+
+      return {
+        posts: payload?.data ?? payload?.Posts ?? [],
+        after: payload?.after ?? "",
+        hasMore: Boolean(
+          after ? payload?.hasPost && payload?.after : payload?.after,
+        ),
+      };
+    };
+
+    const postTemplate = ({ post, count }) => {
+      const image = postImage(post);
+      const text = escapeHtml(post.content?.text?.trim());
+      const date = new Date(post.createdAt * 1000).toLocaleDateString("sl-SI");
+      const url = escapeHtml(post.link || FALLBACK_URL);
+
+      return `
+        <article class="mb-3 inline-block w-full overflow-hidden rounded-lg bg-white align-top text-sm shadow-lg sm:mx-1 sm:w-56">
+          <a class="block font-normal text-inherit no-underline" href="${url}" target="_blank" rel="noopener noreferrer" aria-label="Odpri objavo na Facebooku">
+            ${
+              image
+                ? `<span class="relative block bg-zinc-200">
+                    <img class="block aspect-square w-full object-cover" src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt)}" loading="lazy" decoding="async" />
+                    ${
+                      count > 1
+                        ? `<span class="absolute top-2 right-2 text-white drop-shadow" aria-label="${count} slik">
+                            <svg class="size-6 fill-white/95 stroke-black/15 stroke-1" viewBox="0 0 24 24" aria-hidden="true">
+                              <rect x="7" y="7" width="12" height="12" rx="2"></rect>
+                              <rect x="4" y="4" width="12" height="12" rx="2"></rect>
+                            </svg>
+                          </span>`
+                        : ""
+                    }
+                  </span>`
+                : ""
+            }
+            <span class="grid gap-2 p-3">
+              <span class="flex items-center justify-between gap-3 text-xs text-zinc-600">
+                <span>${date}</span>
+                <span aria-label="Facebook">
+                  <svg class="size-5 fill-blue-600" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 8.5V6.7c0-.9.28-1.5 1.55-1.5H18V2h-3.18C11.34 2 9.8 3.92 9.8 6.9v1.6H7v3.62h2.8V22H14v-9.88h3.35l.5-3.62H14Z"></path>
+                  </svg>
+                </span>
+              </span>
+              <span class="line-clamp-5 text-center leading-relaxed whitespace-pre-line text-zinc-600">${text}</span>
+            </span>
+          </a>
+        </article>
+      `;
+    };
+
+    document.querySelectorAll("[data-social-feed]").forEach(async (root) => {
+      const status = root.querySelector("[data-social-status]");
+      const posts = root.querySelector("[data-social-posts]");
+      const sentinel = root.querySelector("[data-social-sentinel]");
+      const seen = new Set();
+      let after = "";
+      let loading = false;
+      let hasMore = true;
+
+      const load = async () => {
+        if (loading || !hasMore) return;
+        loading = true;
+
+        try {
+          const page = await fetchPosts(root.dataset.wallId, after);
+          const html = groupPosts(page.posts)
+            .filter((group) => {
+              if (seen.has(group.key)) return false;
+              seen.add(group.key);
+              return true;
+            })
+            .map(postTemplate)
+            .join("");
+
+          posts.insertAdjacentHTML("beforeend", html);
+          status.hidden = posts.children.length > 0;
+          after = page.after;
+          hasMore = page.hasMore;
+        } catch (error) {
+          console.error(error);
+          hasMore = false;
+          status.hidden = false;
+          status.textContent = "Objav trenutno ni mogoče naložiti.";
+        } finally {
+          loading = false;
+        }
+
+        if (
+          hasMore &&
+          sentinel.getBoundingClientRect().top < innerHeight + 900
+        ) {
+          requestAnimationFrame(load);
+        }
+      };
+
+      await load();
+      new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) load();
+        },
+        { rootMargin: "900px" },
+      ).observe(sentinel);
+    });
+  })();
+</script>

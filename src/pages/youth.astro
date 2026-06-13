@@ -1,0 +1,66 @@
+---
+import LightboxImage from "@/components/LightboxImage.astro";
+import { youthImages } from "@/const/youth";
+import Page from "@/layouts/Page.astro";
+---
+
+<Page title="Mladina | PGD Škofljica">
+  <section class="mx-auto max-w-screen-2xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <h1
+        class="mb-5 text-center text-4xl leading-tight font-extrabold md:text-5xl"
+      >
+        Mladina
+      </h1>
+
+      <p class="mx-auto mb-4 max-w-3xl text-center text-balance">
+        Želite svojega otroka prijaviti na gasilske vaje? Kontaktirajte mentorje
+        preko spodaj navedenih kontaktnih podatkov, ali pa se oglasite na vajah,
+        ki potekajo po navedenih terminih.
+      </p>
+
+      <div class="my-5 border-t border-zinc-200"></div>
+
+      <div class="grid items-start gap-5 text-center lg:grid-cols-3">
+        <p>
+          <strong>Kontakti mentorjev:</strong><br />
+          Gašper Vešligaj:
+          <a href="tel:+38640379212">+386 40 379 212</a><br />
+          Mail: <a href="mailto:mladina@pgd-skofljica.si"
+            >mladina@pgd-skofljica.si</a
+          >
+        </p>
+        <p>
+          <strong>Tedensko srečanje mladine:</strong><br />
+          Pionirji (od 7 do 11 let): torek ob 18. uri<br />
+          Mladinci (od 12 do 15 let): ponedeljek ob 18. uri<br />
+          Pripravniki (od 16 do 18 let): torek ob 18. uri
+        </p>
+        <p>
+          <strong>Naslednja tekmovanja:</strong><br />
+          /
+        </p>
+      </div>
+
+      <div class="my-5 border-t border-zinc-200"></div>
+
+      <div class="columns-1 gap-4 sm:columns-2 lg:columns-3">
+        {
+          youthImages.map((item) => (
+            <figure class="mb-4 inline-block w-full break-inside-avoid overflow-hidden rounded-lg bg-white shadow-lg">
+              <LightboxImage
+                src={item.img}
+                alt={item.title}
+                widths={[320, 640]}
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              />
+              <figcaption class="px-3 py-3 text-center font-bold text-zinc-600">
+                {item.title}
+              </figcaption>
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Page>
