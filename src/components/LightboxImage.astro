@@ -29,13 +29,19 @@ const {
   class: className = "",
   loading = "lazy",
   priority = false,
-  widths = [320, 640, 960],
+  widths = [320, 480, 640, 960, 1280, 1600, 1920],
   sizes = "100vw",
   fit,
   position,
 } = Astro.props;
 
+const maxRequestedWidth = widths.at(-1) ?? src.width;
 const responsiveWidths = widths.filter((width) => width <= src.width);
+
+if (src.width < maxRequestedWidth && !responsiveWidths.includes(src.width)) {
+  responsiveWidths.push(src.width);
+}
+
 if (responsiveWidths.length === 0) responsiveWidths.push(src.width);
 ---
 
