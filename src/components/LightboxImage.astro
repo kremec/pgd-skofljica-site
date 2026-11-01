@@ -4,12 +4,7 @@ import { Picture } from "astro:assets";
 import type { ImageMetadata } from "astro";
 
 type ImageFit =
-  | "fill"
-  | "contain"
-  | "cover"
-  | "none"
-  | "scale-down"
-  | (string & {});
+  "fill" | "contain" | "cover" | "none" | "scale-down" | (string & {});
 
 interface Props {
   src: ImageMetadata;

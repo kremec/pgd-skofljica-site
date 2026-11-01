@@ -18,9 +18,7 @@ interface Props {
 const { vehicle } = Astro.props;
 ---
 
-<article
-  class="flex h-full min-w-0 flex-col overflow-hidden rounded-lg bg-white shadow-lg"
->
+<article class="flex h-full min-w-0 flex-col overflow-hidden rounded-lg bg-white shadow-lg">
   <LightboxImage
     src={vehicle.image}
     alt={vehicle.name}
@@ -32,7 +30,9 @@ const { vehicle } = Astro.props;
       {vehicle.name}
     </h3>
     <ul class="grid list-none gap-0.5 p-0">
-      {vehicle.details.map((detail) => <li class="min-w-0">{detail}</li>)}
+      {vehicle.details.map((detail) => (
+        <li class="min-w-0">{detail}</li>
+      ))}
     </ul>
     {vehicle.description && <p>{vehicle.description}</p>}
     {vehicle.note && <p class="font-extrabold text-zinc-800">{vehicle.note}</p>}
